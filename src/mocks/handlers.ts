@@ -1,7 +1,7 @@
 import { http, HttpResponse, ws } from 'msw'
 import { toSocketIo } from '@mswjs/socket.io-binding'
 
-const mysocket = ws.link('wss://localhost:3002')
+const mysocket = ws.link('ws://localhost:3002')
 
 export const handlers = [
   mysocket.addEventListener('connection', (connection) => {
