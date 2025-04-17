@@ -1,51 +1,51 @@
-<script setup
-        lang="ts">
-        import type { User } from '@/models/User';
-        import { onMounted, onUnmounted, ref, type Ref } from 'vue';
-        import socketService from '@/services/socketService';
+<script setup lang="ts">
+import type { User } from '@/models/User';
+import { onMounted, onUnmounted, ref, type Ref } from 'vue';
+import socketService from '@/services/socketService';
 
-        /**
-         * Test msw for api call
-         */
-        async function getUser(): Promise<User> {
-          const response = await fetch('http://example.com/user')
-          const user = await response.json()
-          console.log(user)
-          return user
-        }
+/**
+ * Test msw for api call
+ */
+async function getUser(): Promise<User> {
+  const response = await fetch('http://localhost:3000/user')
+  const user = await response.json()
+  console.log(user)
+  return user
+}
 
-        const theUser: Ref<User | undefined> = ref()
-        const messages: Ref<string[]> = ref([])
-        const username: Ref<string> = ref('')
+const theUser: Ref<User | undefined> = ref()
+const messages: Ref<string[]> = ref([])
+const username: Ref<string> = ref('')
 
-        function sendMessage() {
-          if (username.value) {
-            socketService.emit('hello', username.value)
-          }
-        }
+function sendMessage() {
+  if (username.value) {
+    socketService.emit('hello', username.value)
+  }
+}
 
-        onMounted(async () => {
-          // Get user data
-          theUser.value = await getUser()
+onMounted(async () => {
+  // Get user data
+  theUser.value = await getUser()
 
-          // Set default username from user data
-          if (theUser.value) {
-            username.value = theUser.value.firstName
-          }
+  // Set default username from user data
+  if (theUser.value) {
+    username.value = theUser.value.firstName
+  }
 
-          // Connect to socket
-          socketService.connect()
+  // Connect to socket
+  socketService.connect()
 
-          // Listen for messages
-          socketService.on<string>('message', (data) => {
-            messages.value.push(data)
-          })
-        })
+  // Listen for messages
+  socketService.on<string>('message', (data) => {
+    console.log("pushing message", data)
+    messages.value.push(data)
+  })
+})
 
-        onUnmounted(() => {
-          // Clean up socket connection
-          socketService.disconnect()
-        })
+onUnmounted(() => {
+  // Clean up socket connection
+  socketService.disconnect()
+})
 </script>
 
 <template>

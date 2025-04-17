@@ -4,7 +4,7 @@ class SocketService {
   private socket: Socket | null = null;
   private readonly url: string;
 
-  constructor(url: string = 'ws://localhost:3002') {
+  constructor(url: string = 'ws://localhost:3000') {
     this.url = url;
   }
 

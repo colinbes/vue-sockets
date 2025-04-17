@@ -2,17 +2,19 @@ import './assets/main.css'
 
 import { createApp } from 'vue'
 import App from './App.vue'
+import { setupWorker } from 'msw/browser'
+import { handlers } from './mocks/handlers'
+import { http, HttpResponse, ws } from 'msw'
+import { toSocketIo } from '@mswjs/socket.io-binding'
+import { worker } from '@/mocks/browser'
 
 async function enableMocking() {
-  const { worker } = await import('@/mocks/browser')
-  console.log("loaded worker")
-  return worker.start()
+  await worker.start()
 }
 
 (async () => {
   await enableMocking()
 
-  console.log("mock enabled")
   const app = createApp(App)
   app.mount('#app')
 
