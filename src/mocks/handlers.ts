@@ -1,4 +1,4 @@
-import { http, HttpResponse, WebSocketHandler, ws } from 'msw'
+import { http, HttpResponse, ws } from 'msw'
 import { toSocketIo } from '@mswjs/socket.io-binding'
 
 
