@@ -1,15 +1,19 @@
-import { http, HttpResponse, ws } from 'msw'
+import { http, HttpResponse, passthrough, ws } from 'msw'
 import { toSocketIo } from '@mswjs/socket.io-binding'
-
 
 const mysocket = ws.link('ws://localhost:3000')
 
 export const handlers = [
   mysocket.addEventListener('connection', (connection) => {
     console.log("adding socket event listener")
+
     const io = toSocketIo(connection)
-    io.client.on('hello', (username) => {
-      io.client.emit('message', `hello there, ${username}!`)
+
+    io.client.on('hello', (event, message) => {
+      const username = message
+      console.log("got hello", username)
+      const resp = `hello there, ${username}!`
+      io.client.emit('message', resp)
     })
   }),
   http.get('http://localhost:3000/user', () => {

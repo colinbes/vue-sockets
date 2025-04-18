@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-class SocketService {
+export class SocketService {
   private socket: Socket | null = null;
   private readonly url: string;
 
@@ -62,6 +62,7 @@ class SocketService {
 }
 
 // Create a singleton instance
-const socketService = new SocketService();
+// const socketService = new SocketService();
+// socketService.connect()
 
-export default socketService;
+// export default socketService;

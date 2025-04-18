@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { User } from '@/models/User';
+import type { Socket } from 'socket.io-client';
 import { onMounted, onUnmounted, ref, type Ref } from 'vue';
-import socketService from '@/services/socketService';
 
 /**
  * Test msw for api call
@@ -16,27 +16,30 @@ async function getUser(): Promise<User> {
 const theUser: Ref<User | undefined> = ref()
 const messages: Ref<string[]> = ref([])
 const username: Ref<string> = ref('')
+let mySocket: Socket
 
 function sendMessage() {
   if (username.value) {
-    socketService.emit('hello', username.value)
+    const name: string = username.value
+    mySocket.emit('hello', name)
   }
 }
 
 onMounted(async () => {
   // Get user data
+  const { SocketService } = await import('@/services/socketService')
   theUser.value = await getUser()
+  const newSocket = new SocketService("ws://localhost:3000")
+
+  mySocket = newSocket.connect()
 
   // Set default username from user data
   if (theUser.value) {
     username.value = theUser.value.firstName
   }
 
-  // Connect to socket
-  socketService.connect()
-
-  // Listen for messages
-  socketService.on<string>('message', (data) => {
+  mySocket.on('message', (data) => {
+    const abc = data
     console.log("pushing message", data)
     messages.value.push(data)
   })
@@ -44,7 +47,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   // Clean up socket connection
-  socketService.disconnect()
+  // socketService.disconnect()
 })
 </script>
 
