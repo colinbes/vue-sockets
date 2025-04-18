@@ -1,11 +1,15 @@
-<script setup
-        lang="ts">
-        import HelloWorld from './components/HelloWorld.vue'
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { defineAsyncComponent } from 'vue';
+import { ref } from 'vue';
+
+const MswExample = defineAsyncComponent(() => import('./components/MswExample.vue'))
+
 </script>
 
 <template>
   <main>
-    <HelloWorld />
+    <MswExample />
   </main>
 </template>
 

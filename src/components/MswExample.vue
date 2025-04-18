@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { User } from '@/models/User';
+import { useSocketStore } from '@/store/socketStore';
 import type { Socket } from 'socket.io-client';
+import { nextTick } from 'vue';
 import { onMounted, onUnmounted, ref, type Ref } from 'vue';
+
+const socketStore = useSocketStore()
 
 /**
  * Test msw for api call
@@ -21,33 +25,39 @@ let mySocket: Socket
 function sendMessage() {
   if (username.value) {
     const name: string = username.value
-    mySocket.emit('hello', name)
+    socketStore.emit('hello', name)
   }
 }
 
 onMounted(async () => {
-  // Get user data
-  const { SocketService } = await import('@/services/socketService')
-  theUser.value = await getUser()
-  const newSocket = new SocketService("ws://localhost:3000")
+  try {
+    await socketStore.connect()
+    messages.value.push('Connected to server')
 
-  mySocket = newSocket.connect()
+    socketStore.on('message', (data) => {
+      const abc = data
+      console.log("pushing message", data)
+      if (typeof data === 'string') {
+        messages.value.push(data)
+      } else if (data && typeof data === 'object') {
+        messages.value.push(`Received: ${JSON.stringify(data)}`)
+      }
+    })
+  } catch (error) {
+    messages.value.push(`Connection error: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
+  // Get user data
+  theUser.value = await getUser()
 
   // Set default username from user data
   if (theUser.value) {
     username.value = theUser.value.firstName
   }
-
-  mySocket.on('message', (data) => {
-    const abc = data
-    console.log("pushing message", data)
-    messages.value.push(data)
-  })
 })
 
 onUnmounted(() => {
-  // Clean up socket connection
-  // socketService.disconnect()
+  socketStore.disconnect()
 })
 </script>
 
