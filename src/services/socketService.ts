@@ -8,7 +8,7 @@ export class SocketService {
     this.url = url;
   }
 
-  connect(): Socket {
+  connect(): Socket { //TODO not production suitable.
     if (!this.socket) {
       this.socket = io(this.url, {
         transports: ['websocket'],
