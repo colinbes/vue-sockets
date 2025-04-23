@@ -11,7 +11,6 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed, onUnmounted } from 'vue'
-import { useLocalStorage } from '@vueuse/core'
 import { io, Socket } from 'socket.io-client'
 
 /**
@@ -41,7 +40,7 @@ export interface SocketConfig {
  * Default socket configuration
  */
 const DEFAULT_CONFIG: SocketConfig = {
-  url: 'ws://localhost:3000',
+  url: "ws://localhost:3000",
   autoConnect: true,
   reconnection: true,
   reconnectionAttempts: 5,
@@ -56,6 +55,7 @@ const DEFAULT_CONFIG: SocketConfig = {
  * This store handles connecting, disconnecting, emitting events, and listening for events.
  */
 export const useSocketStore = defineStore('socket', () => {
+  console.log("--->Creating useSocketStore Vue file")
   // Socket instance
   const socket = ref<Socket | null>(null)
 
@@ -66,8 +66,10 @@ export const useSocketStore = defineStore('socket', () => {
   const errorMessage = ref<string | null>(null)
 
   // Socket configuration
-  const configStorage = useLocalStorage('socket-config', DEFAULT_CONFIG)
-  const config = ref<SocketConfig>({ ...configStorage.value })
+  // const configStorage = useLocalStorage('socket-config', DEFAULT_CONFIG)
+  // const config = ref<SocketConfig>({ ...configStorage.value })
+  let configStorage = DEFAULT_CONFIG
+  const config = ref<SocketConfig>({ ...configStorage })
 
   // Socket event listeners
   const listeners = ref<Map<string, Array<(...args: unknown[]) => void>>>(new Map())
@@ -99,7 +101,8 @@ export const useSocketStore = defineStore('socket', () => {
    */
   const updateConfig = (newConfig: Partial<SocketConfig>) => {
     config.value = { ...config.value, ...newConfig }
-    configStorage.value = { ...config.value }
+    // configStorage.value = { ...config.value }
+    configStorage = { ...config.value }
   }
 
   /**
@@ -273,7 +276,8 @@ export const useSocketStore = defineStore('socket', () => {
   const $reset = () => {
     disconnect()
     config.value = DEFAULT_CONFIG
-    configStorage.value = DEFAULT_CONFIG
+    // configStorage.value = DEFAULT_CONFIG
+    configStorage = DEFAULT_CONFIG
     status.value = SocketStatus.DISCONNECTED
     errorMessage.value = null
     listeners.value.clear()

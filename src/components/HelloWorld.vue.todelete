@@ -1,85 +1,53 @@
 <script setup lang="ts">
-console.log("--->Loading Dashboard Vue file")
 import type { User } from '@/models/User';
-import { useSocketStore } from '@/store/socketStore';
+import type { Socket } from 'socket.io-client';
 import { onMounted, onUnmounted, ref, type Ref } from 'vue';
-
-const socketStore = useSocketStore()
 
 /**
  * Test msw for api call
  */
 async function getUser(): Promise<User> {
   const response = await fetch('http://localhost:3000/user')
-  // const response = await fetch('/user')
   const user = await response.json()
   console.log(user)
   return user
 }
 
-async function doStart(): Promise<void> {
-  const response = await fetch('http://localhost:3000/start', {
-    method: 'PUT'
-  })
-}
-
 const theUser: Ref<User | undefined> = ref()
 const messages: Ref<string[]> = ref([])
 const username: Ref<string> = ref('')
+let mySocket: Socket
 
 function sendMessage() {
   if (username.value) {
     const name: string = username.value
-    socketStore.emit('hello', name)
+    mySocket.emit('hello', name)
   }
 }
 
 onMounted(async () => {
+  // Get user data
+  const { SocketService } = await import('@/services/socketService')
+  theUser.value = await getUser()
+  const newSocket = new SocketService("ws://localhost:3000")
 
-  try {
-    await socketStore.connect()
-    messages.value.push('Connected to server')
+  mySocket = newSocket.connect()
 
-    socketStore.on('message', (data) => {
-      console.log("pushing message", data)
-      if (typeof data === 'string') {
-        messages.value.push(`<messages> ${data}`)
-      } else if (data && typeof data === 'object') {
-        messages.value.push(`Received-m: ${JSON.stringify(data)}`)
-      }
-    })
-    socketStore.on('hello', (data) => {
-      console.log("pushing hello", data)
-      if (typeof data === 'string') {
-        messages.value.push(`<hello> ${data}`)
-      } else if (data && typeof data === 'object') {
-        messages.value.push(`Receiv-h: ${JSON.stringify(data)}`)
-      }
-    })
-    socketStore.on('send:status', (data) => {
-      if (typeof data === 'string') {
-        messages.value.push(`<send:status>  ${data}`)
-      }
-    })
-  } catch (error) {
-    messages.value.push(`Connection error: ${error instanceof Error ? error.message : String(error)}`)
+  // Set default username from user data
+  if (theUser.value) {
+    username.value = theUser.value.firstName
   }
 
-  try {
-    // Get user data
-    theUser.value = await getUser()
-
-    // Set default username from user data
-    if (theUser.value) {
-      username.value = theUser.value.firstName
-    }
-  } catch (err) {
-    console.error(`Error tryng to get get ${err}`)
-  }
+  mySocket.on('message', (data) => {
+    const abc = data
+    console.log("pushing message", data)
+    messages.value.push(data)
+  })
 })
 
 onUnmounted(() => {
-  socketStore.disconnect()
+  // Clean up socket connection
+  // socketService.disconnect()
 })
 </script>
 
@@ -90,11 +58,6 @@ onUnmounted(() => {
     <div class="socket-container">
       <h2>Socket.io Demo</h2>
 
-      <div class="row">
-        <label>Add send:status -> start clicked+seconds to messages</label>
-        <button @click="doStart">Start</button>
-      </div>
-      <hr />
       <div class="form-group">
         <label for="username">Your Name:</label>
         <input id="username" v-model="username" type="text" placeholder="Enter your name" />
@@ -114,15 +77,9 @@ onUnmounted(() => {
 
 <style scoped>
 .hello-container {
-  max-width: 900px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-}
-
-.row {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 10px;
 }
 
 .socket-container {
@@ -134,7 +91,6 @@ onUnmounted(() => {
 }
 
 .form-group {
-  margin-top: 10px;
   margin-bottom: 20px;
 }
 

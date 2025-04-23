@@ -12,6 +12,7 @@ export default defineConfig((env) => {
     envars.VITE_SERVER_URL ?? '<http://localhost:3000>'
   );
   const serverAPIPath = envars.VITE_SERVER_API_PATH ?? '/api';
+
   return {
     envDir: './',
     plugins: [
@@ -29,6 +30,11 @@ export default defineConfig((env) => {
         // proxy requests with the API path to the server
         // <http://localhost:5173/api> -> <http://localhost:3000/api>
         [serverAPIPath]: serverURL.origin,
+        // '/socket.io': {
+        //   target: 'ws://localhost:3000',
+        //   ws: true,
+        //   rewriteWsOrigin: true,
+        // },
       },
     },
   }
